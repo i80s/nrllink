@@ -728,6 +728,18 @@ func forwardVoice(nrl *NRL21packet, dev *deviceInfo, packet []byte, gp *group) {
 		numbs = 3
 	}
 
+	// 如果是“设备互联”群组, 则将数据转发给指定的录音客户端(NANNY-250)
+	if gp.Type == 2 {
+		if rec_dev, ok := devCallsignSSIDMap["NANNY-250"]; ok {
+			if rec_dev.udpAddr != nil && ((rec_dev.Status & 2) != 2) {
+				outPacket, err := packetForRecipient(rec_dev)
+				if err == nil {
+					globelconn.WriteToUDP(outPacket, rec_dev.udpAddr)
+				}
+			}
+		}
+	}
+
 	//log.Println("PCMMIX: ", dev.CallSignSSID, "numbs", dev.GroupID, numbs, "type", gp.Type, "gp.ID", gp.ID, "gp.Name", gp.Name)
 
 	switch numbs {
